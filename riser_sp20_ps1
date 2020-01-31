@@ -1,0 +1,58 @@
+import argparse
+import warnings
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='Count the frequency of k-mers in a given nucleotide sequence based on k')
+    parser.add_argument('-f', dest='seqFile', required=True, help='Name of the file the genome string is contained in')
+    parser.add_argument('-k', dest='k', default=1, type=int,
+                        help='Designate the length of sequence for which to caluclate frequencies')
+
+    args = parser.parse_args()
+
+    assert args.k > 0, 'Cannot read a kmer of length 0'
+
+    k = args.k
+
+    with open(args.seqFile, 'r') as file:
+        sequence = file.read().replace('\n', '')
+
+    assert len(sequence) > k, 'Cannot calculate kmers from a genome under size k'
+    sequence = sequence.upper()
+
+    for letter in sequence:
+        assert letter.isalpha(), "Nucleotides must be represented by letters"
+        if letter != 'C' and letter != 'G' and letter != 'A' and letter != 'T':
+            warnings.warn("WARNING: This file contains characters other than A, T, C, and G")
+
+    kmerCount(sequence, k)
+
+
+def kmerCount(sequence, k):
+    frequencies = {}
+    kmer = ''
+    freq = 0
+    total = 0
+
+    for i in range(0, len(sequence) - (k - 1)):
+        kmer = sequence[i: i + k]
+        if kmer in frequencies:
+            freq = frequencies.get(kmer)
+            frequencies[kmer] = freq + 1
+            total += 1
+        else:
+            frequencies[kmer] = 1
+            total += 1
+
+    for key in frequencies:
+        kmer = frequencies.get(key)
+        frequencies[key] = kmer / total
+
+    print("Identified kmers of length", k)
+    print("Frequencies of identified kmers:", frequencies)
+    print("Total nucleotides in genome file:", total)
+
+
+if __name__ == "__main__":
+    main()
